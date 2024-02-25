@@ -17,6 +17,7 @@ black = (0, 0, 0)
 green = (0, 255, 0)
 grey = (150, 200, 180)
 brown = (165, 42, 42)
+blue = (0,0,255)
 
 ################## SCREEN GENERATION ####################
 
@@ -112,13 +113,36 @@ def get_highscore(player_name):
 def show_score(text, color, x, y):
     screen_text = font.render(text, True, color)
     gw.blit(screen_text, [x, y])
-
 def plot_snake(gameWindow, color, snk_list, snake_size):
     for i, (x, y) in enumerate(snk_list):
         if i == len(snk_list) - 1:  # Check if it's the head of the snake
-            pygame.draw.rect(gameWindow, brown , [x, y, snake_size, snake_size])  # Brown color for the head
+            pygame.draw.rect(gameWindow, red, [x, y, snake_size, snake_size])
+
+            # Calculate positions for eyes
+            eye_size = int(snake_size / 2)
+            eye_left = (x + int(snake_size / 3)-10, y + int(snake_size / 4))
+            eye_right = (x + int(snake_size * 2 / 3) - eye_size + 10, y + int(snake_size / 4))
+
+            # Draw eyes
+            pygame.draw.ellipse(gameWindow, white, [eye_left[0], eye_left[1], eye_size, eye_size])
+            pygame.draw.ellipse(gameWindow, white, [eye_right[0], eye_right[1], eye_size, eye_size])
+
+            # Calculate position for the black dot (pupil)
+            pupil_size = int(eye_size / 2)
+            pupil_left = (eye_left[0] + int(eye_size / 4), eye_left[1] + int(eye_size / 4))
+            pupil_right = (eye_right[0] + int(eye_size / 4), eye_right[1] + int(eye_size / 4))
+
+            # Draw black dot (pupil)
+            pygame.draw.ellipse(gameWindow, black, [pupil_left[0], pupil_left[1], pupil_size, pupil_size])
+            pygame.draw.ellipse(gameWindow, black, [pupil_right[0], pupil_right[1], pupil_size, pupil_size])
+
         else:
-            pygame.draw.rect(gameWindow, color, [x, y, snake_size, snake_size])
+            # Draw blue stripes on the snake's body
+            if i % 15 == 0:
+                pygame.draw.rect(gameWindow, blue, [x, y, snake_size, snake_size])
+            else:
+                pygame.draw.rect(gameWindow, color, [x, y, snake_size, snake_size])
+
 
 
 def draw_leaderboard_button():
