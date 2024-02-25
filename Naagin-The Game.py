@@ -5,6 +5,7 @@ import os
 import sqlite3
 import threading as th
 import math
+import pygame_menu as pm 
 
 ################## INITIALIZATION ####################
 pygame.mixer.init()
@@ -19,6 +20,7 @@ green = (0, 255, 0)
 grey = (150, 200, 180)
 brown = (165, 42, 42)
 blue = (0,0,255)
+pink = (247, 17, 213)
 
 ################## SCREEN GENERATION ####################
 
@@ -36,7 +38,7 @@ pygame.display.update()
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 45)
 
-################## DATABASE ####################
+################## DATABASE CONNECTION ####################
 player_name = ""
 
 # Create a database connection
@@ -54,7 +56,7 @@ cursor.execute('''
 conn.commit()
 
 
-###############VARIABLES#####################
+############### VARIABLES#####################
 leaderboard_button_rect = pygame.Rect(750, 15, 135, 40)
 leaderboard_button_color = (50, 50, 50)
 leaderboard_button_text_color = white
@@ -72,11 +74,15 @@ user_button_color = (50, 50, 50)
 user_button_text_color = white
 user_button_font = pygame.font.SysFont(None, 30)
 
-
 name_entry_visible = False
 text_box_rect = pygame.Rect(250, 550, 400, 40)
 text_box_color = white
 text_box_line_color = red
+
+dropdown_button_color = (50,50,50)
+dropdown_button_rect = pygame.Rect(750, 70, 135, 40)
+dropdown_button_font = pygame.font.SysFont(None, 30)
+dropdown_button_text_color = white
 
 
 def insert_player_data(name, highscore):
@@ -116,14 +122,14 @@ def show_score(text, color, x, y):
     gw.blit(screen_text, [x, y])
     
 
-def plot_snakey(gameWindow,color, snk_list, snake_size, time_elapsed):
+def plot_snakey(gameWindow,head_color,body_color,strip_color, snk_list, snake_size, time_elapsed):
     for i, (x, y) in enumerate(snk_list):
         # Calculate wavy patterns for both x and y coordinates
         angle_x = math.sin(time_elapsed + i / 5) * 10  # Adjust the multiplier for the wavy pattern in the x direction
         angle_y = math.cos(time_elapsed + i / 5) * 10  # Adjust the multiplier for the wavy pattern in the y direction
 
         if i == len(snk_list) - 1:  # Check if it's the head of the snake
-            pygame.draw.circle(gameWindow, red, (int(x + angle_x + snake_size / 2), int(y + angle_y + snake_size / 2)), int(snake_size / 2))
+            pygame.draw.circle(gameWindow,head_color, (int(x + angle_x + snake_size / 2), int(y + angle_y + snake_size / 2)), int(snake_size / 2))
 
             # Calculate positions for eyes
             eye_size = int(snake_size / 4)
@@ -145,16 +151,60 @@ def plot_snakey(gameWindow,color, snk_list, snake_size, time_elapsed):
 
         else:
             # Draw continuous wavy pattern on the snake's body in both directions
-            pygame.draw.circle(gameWindow, green, (int(x + angle_x + snake_size / 2), int(y + angle_y + snake_size / 2)), int(snake_size / 2))
+            pygame.draw.circle(gameWindow, body_color, (int(x + angle_x + snake_size / 2), int(y + angle_y + snake_size / 2)), int(snake_size / 2))
 
             # Draw blue circle every i%15 steps
             if i % 15 == 0:
-                pygame.draw.circle(gameWindow, blue, (int(x + angle_x + snake_size / 2), int(y + angle_y + snake_size / 2)), int(snake_size / 2))
+                pygame.draw.circle(gameWindow, strip_color, (int(x + angle_x + snake_size / 2), int(y + angle_y + snake_size / 2)), int(snake_size / 2))
+
 
 def draw_leaderboard_button():
     pygame.draw.rect(gw, leaderboard_button_color, leaderboard_button_rect)
     leaderboard_button_text = leaderboard_button_font.render("Leaderboard", True, leaderboard_button_text_color)
     gw.blit(leaderboard_button_text, (leaderboard_button_rect.x + 5, leaderboard_button_rect.y + 10))
+    
+def draw_dropdown_button():
+    pygame.draw.rect(gw, dropdown_button_color, dropdown_button_rect)
+    dropdown_button_text = dropdown_button_font.render("Theme",True,dropdown_button_text_color)
+    gw.blit(dropdown_button_text, (dropdown_button_rect.x + 35, dropdown_button_rect.y + 10))
+    
+def show_dropdowns():
+    global settings
+    settings = []
+    head = [("White", "white"), 
+                ("Yellow", "yellow"), 
+                ("Red", "red"), 
+                ("Black", "black"),
+                ("Green","green"),
+                ("Grey","grey"),
+                ("Brown","brown"),
+                ("Blue","blue"),
+                ("Pink","pink")]
+    
+    body,strips,background_color,food = head,head,head,head
+            
+    # Creating the settings menu 
+    settings = pm.Menu(title="Settings", 
+                       width=screen_width, 
+                       height=screen_height, 
+                       theme=pm.themes.THEME_GREEN) 
+    
+    # Adjusting the default values 
+    settings._theme.widget_font_size = 25
+    settings._theme.widget_font_color = black 
+    settings._theme.widget_alignment = pm.locals.ALIGN_LEFT
+    
+    settings.add.dropselect(title="Head Colour", items=head, dropselect_id="hcc", default=0)
+    settings.add.dropselect(title="Body Colour", items=body, dropselect_id="bcc", default=0)
+    settings.add.dropselect(title="Strip Colour", items=strips, dropselect_id="scc", default=0)
+    settings.add.dropselect(title="Food Colour", items=food, dropselect_id="fcc", default=0)
+    settings.add.dropselect(title="Background Colour", items=background_color, dropselect_id="bgcc", default=0)
+
+    settings.add.button(title="Restore Defaults", action=settings.reset_value, font_color=white, background_color=red) 
+    settings.add.button(title="Return To Home Screen", action = welcome, align=pm.locals.ALIGN_CENTER)
+    
+    settings.mainloop(gw) 
+    
     
 def show_leaderboard():
     global player_name
@@ -238,6 +288,7 @@ def welcome():
         # Draw Existing User and New User buttons
         draw_user_buttons()
         draw_leaderboard_button()
+        draw_dropdown_button()
 
         # Draw text box only if needed
         if existing_user or new_user or name_entry_visible:
@@ -263,6 +314,9 @@ def welcome():
                 # Check if Leaderboard button is clicked
                 elif leaderboard_button_rect.collidepoint(mouse_pos):
                     show_leaderboard()
+                    
+                elif dropdown_button_rect.collidepoint(mouse_pos):
+                    show_dropdowns()
 
             # Handle keyboard events outside of conditions
             if event.type == pygame.KEYDOWN:
@@ -323,7 +377,35 @@ def gameloop():
     snake_size = 30
     fps = 70
     time_elapsed = 0
+    global settingsData 
+
+    try:
+        settingsData = settings.get_input_data()
+        global setlist 
+        setlist = settingsData.keys()
+        global theme_list 
+        theme_list = []
     
+    
+        for keys in settingsData.keys():
+            theme_list.append(keys)
+            
+        selected_theme = [settingsData[theme_list[0]][0][1],settingsData[theme_list[1]][0][1],settingsData[theme_list[2]][0][1],settingsData[theme_list[3]][0][1],settingsData[theme_list[4]][0][1]]
+        head_color = eval(selected_theme[0])
+        body_color = eval(selected_theme[1])
+        strip_color = eval(selected_theme[2])
+        bkg_color = eval(selected_theme[3])
+        food_color = eval(selected_theme[4])
+    except Exception:
+        head_color = red
+        body_color = green
+        strip_color = blue
+        bkg_color = black
+        food_color = yellow
+    
+    
+    
+        
     
     if not os.path.exists("highscore.txt"):
         with open ("highscore.txt","w") as f:
@@ -397,7 +479,7 @@ def gameloop():
                 if score > int(highscore):
                     highscore = score
 
-            gw.fill(black)
+            gw.fill(bkg_color)
             
             highscore = get_highscore(player_name)
             if highscore is None or score > int(highscore):
@@ -405,7 +487,7 @@ def gameloop():
 
             #show_score("Score : " + str(score) + "   HighScore : " + str(highscore), white, 5, 5)
             show_score("Score : " + str(score), white, 5, 5)
-            pygame.draw.rect(gw, yellow, [food_x, food_y, snake_size, snake_size])
+            pygame.draw.rect(gw, food_color, [food_x, food_y, snake_size, snake_size])
 
             head = []
             head.append(snake_x)
@@ -445,7 +527,7 @@ def gameloop():
                         snake_y -= screen_height
                 
             #plot_snake(gw, red, snk_list, snake_size)
-            plot_snakey(gw, red, snk_list, snake_size, time_elapsed)
+            plot_snakey(gw, head_color,body_color,strip_color, snk_list, snake_size, time_elapsed)
             time_elapsed += 0.1  # Adjust the increment to control the speed of the wave
             
         pygame.display.update()
