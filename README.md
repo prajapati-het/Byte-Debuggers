@@ -13,4 +13,5 @@ Follow the below instructions to play the game:
 This game stores the data of players,scores,etc in the database named "player_data.db"
 I have provided background music to have a realistic feel of the game.
 
+Comments are there at each nook and corner for understanding the functionality.
 You can also have a look on the video tutorial given in this repo by downloading it for more clearity.
