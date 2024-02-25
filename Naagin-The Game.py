@@ -197,8 +197,8 @@ def show_dropdowns():
     settings.add.dropselect(title="Head Colour", items=head, dropselect_id="hcc", default=0)
     settings.add.dropselect(title="Body Colour", items=body, dropselect_id="bcc", default=0)
     settings.add.dropselect(title="Strip Colour", items=strips, dropselect_id="scc", default=0)
-    settings.add.dropselect(title="Food Colour", items=food, dropselect_id="fcc", default=0)
     settings.add.dropselect(title="Background Colour", items=background_color, dropselect_id="bgcc", default=0)
+    settings.add.dropselect(title="Food Colour", items=food, dropselect_id="fcc", default=0)
 
     settings.add.button(title="Restore Defaults", action=settings.reset_value, font_color=white, background_color=red) 
     settings.add.button(title="Return To Home Screen", action = welcome, align=pm.locals.ALIGN_CENTER)
@@ -403,17 +403,12 @@ def gameloop():
         bkg_color = black
         food_color = yellow
     
-    
-    
-        
-    
     if not os.path.exists("highscore.txt"):
         with open ("highscore.txt","w") as f:
                 f.write("0")
                 
     with open ("highscore.txt","r") as f:
         highscore = f.read()
-    
     
     while not exit_game:
         if game_over:
@@ -429,7 +424,6 @@ def gameloop():
 
             show_score("  Naagin Khatam, Kahaani Khatam   Press Enter To Continue  ", red, 5, 250)
             show_score("                                               Zeher : " + str(score) , yellow, 10, 290)
-            
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -441,7 +435,6 @@ def gameloop():
                         welcome()
 
         else:
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     conn.close()
@@ -485,7 +478,6 @@ def gameloop():
             if highscore is None or score > int(highscore):
                 highscore = score
 
-            #show_score("Score : " + str(score) + "   HighScore : " + str(highscore), white, 5, 5)
             show_score("Score : " + str(score), white, 5, 5)
             pygame.draw.rect(gw, food_color, [food_x, food_y, snake_size, snake_size])
 
@@ -525,8 +517,7 @@ def gameloop():
                         for i in range(len(snk_list)):
                             snk_list[i][1] -= screen_height
                         snake_y -= screen_height
-                
-            #plot_snake(gw, red, snk_list, snake_size)
+
             plot_snakey(gw, head_color,body_color,strip_color, snk_list, snake_size, time_elapsed)
             time_elapsed += 0.1  # Adjust the increment to control the speed of the wave
             
@@ -535,7 +526,6 @@ def gameloop():
 
     pygame.quit()
     quit()
-
 
 if __name__=="__main__":
     pygame.mixer.music.load('home_music.mp3')
