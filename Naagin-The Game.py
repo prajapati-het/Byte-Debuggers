@@ -4,6 +4,7 @@ import random
 import os
 import sqlite3
 import threading as th
+import math
 
 ################## INITIALIZATION ####################
 pygame.mixer.init()
@@ -113,37 +114,42 @@ def get_highscore(player_name):
 def show_score(text, color, x, y):
     screen_text = font.render(text, True, color)
     gw.blit(screen_text, [x, y])
-def plot_snake(gameWindow, color, snk_list, snake_size):
+    
+
+def plot_snakey(gameWindow,color, snk_list, snake_size, time_elapsed):
     for i, (x, y) in enumerate(snk_list):
+        # Calculate wavy patterns for both x and y coordinates
+        angle_x = math.sin(time_elapsed + i / 5) * 10  # Adjust the multiplier for the wavy pattern in the x direction
+        angle_y = math.cos(time_elapsed + i / 5) * 10  # Adjust the multiplier for the wavy pattern in the y direction
+
         if i == len(snk_list) - 1:  # Check if it's the head of the snake
-            pygame.draw.rect(gameWindow, red, [x, y, snake_size, snake_size])
+            pygame.draw.circle(gameWindow, red, (int(x + angle_x + snake_size / 2), int(y + angle_y + snake_size / 2)), int(snake_size / 2))
 
             # Calculate positions for eyes
-            eye_size = int(snake_size / 2)
-            eye_left = (x + int(snake_size / 3)-10, y + int(snake_size / 4))
+            eye_size = int(snake_size / 4)
+            eye_left = (x + int(snake_size / 3) - 10, y + int(snake_size / 4))
             eye_right = (x + int(snake_size * 2 / 3) - eye_size + 10, y + int(snake_size / 4))
 
             # Draw eyes
-            pygame.draw.ellipse(gameWindow, white, [eye_left[0], eye_left[1], eye_size, eye_size])
-            pygame.draw.ellipse(gameWindow, white, [eye_right[0], eye_right[1], eye_size, eye_size])
+            pygame.draw.circle(gameWindow, white, (int(eye_left[0] + angle_x + eye_size), int(eye_left[1] + angle_y + eye_size)), eye_size)
+            pygame.draw.circle(gameWindow, white, (int(eye_right[0] + angle_x + eye_size), int(eye_right[1] + angle_y + eye_size)), eye_size)
 
             # Calculate position for the black dot (pupil)
             pupil_size = int(eye_size / 2)
-            pupil_left = (eye_left[0] + int(eye_size / 4), eye_left[1] + int(eye_size / 4))
-            pupil_right = (eye_right[0] + int(eye_size / 4), eye_right[1] + int(eye_size / 4))
+            pupil_left = (int(eye_left[0] + angle_x + int(eye_size / 2)), int(eye_left[1] + angle_y + int(eye_size / 2)))
+            pupil_right = (int(eye_right[0] + angle_x + int(eye_size / 2)), int(eye_right[1] + angle_y + int(eye_size / 2)))
 
             # Draw black dot (pupil)
-            pygame.draw.ellipse(gameWindow, black, [pupil_left[0], pupil_left[1], pupil_size, pupil_size])
-            pygame.draw.ellipse(gameWindow, black, [pupil_right[0], pupil_right[1], pupil_size, pupil_size])
+            pygame.draw.circle(gameWindow, black, (pupil_left[0] + pupil_size, pupil_left[1] + pupil_size), pupil_size)
+            pygame.draw.circle(gameWindow, black, (pupil_right[0] + pupil_size, pupil_right[1] + pupil_size), pupil_size)
 
         else:
-            # Draw blue stripes on the snake's body
+            # Draw continuous wavy pattern on the snake's body in both directions
+            pygame.draw.circle(gameWindow, green, (int(x + angle_x + snake_size / 2), int(y + angle_y + snake_size / 2)), int(snake_size / 2))
+
+            # Draw blue circle every i%15 steps
             if i % 15 == 0:
-                pygame.draw.rect(gameWindow, blue, [x, y, snake_size, snake_size])
-            else:
-                pygame.draw.rect(gameWindow, color, [x, y, snake_size, snake_size])
-
-
+                pygame.draw.circle(gameWindow, blue, (int(x + angle_x + snake_size / 2), int(y + angle_y + snake_size / 2)), int(snake_size / 2))
 
 def draw_leaderboard_button():
     pygame.draw.rect(gw, leaderboard_button_color, leaderboard_button_rect)
@@ -316,6 +322,7 @@ def gameloop():
     speed = 5
     snake_size = 30
     fps = 70
+    time_elapsed = 0
     
     
     if not os.path.exists("highscore.txt"):
@@ -437,7 +444,9 @@ def gameloop():
                             snk_list[i][1] -= screen_height
                         snake_y -= screen_height
                 
-            plot_snake(gw, red, snk_list, snake_size)
+            #plot_snake(gw, red, snk_list, snake_size)
+            plot_snakey(gw, red, snk_list, snake_size, time_elapsed)
+            time_elapsed += 0.1  # Adjust the increment to control the speed of the wave
             
         pygame.display.update()
         clock.tick(fps)
