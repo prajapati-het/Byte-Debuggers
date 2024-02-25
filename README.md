@@ -14,4 +14,4 @@ This game stores the data of players,scores,etc in the database named "player_da
 I have provided background music to have a realistic feel of the game.
 
 Comments are there at each nook and corner for understanding the functionality.
-You can also have a look on the video tutorial given in this repo by downloading it for more clearity.
+You can also have a look on the video tutorial on my Youtube Channel : https://youtu.be/yE1s6HWYGV0  for more clarity.
