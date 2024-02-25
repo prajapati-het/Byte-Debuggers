@@ -33,7 +33,7 @@ bgimg = pygame.image.load("homescreen.jpg")
 bgimg = pygame.transform.scale(bgimg, (screen_width, screen_height)).convert_alpha()
 
 ################## TITLE N CLOCK ####################
-pygame.display.set_caption("SnakesWithHarry")
+pygame.display.set_caption("Naagin-The Game")
 pygame.display.update()
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 45)
