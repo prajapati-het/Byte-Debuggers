@@ -16,6 +16,7 @@ red = (255, 0, 0)
 black = (0, 0, 0)
 green = (0, 255, 0)
 grey = (150, 200, 180)
+brown = (165, 42, 42)
 
 ################## SCREEN GENERATION ####################
 
@@ -50,6 +51,32 @@ cursor.execute('''
 ''')
 conn.commit()
 
+
+###############VARIABLES#####################
+leaderboard_button_rect = pygame.Rect(750, 15, 135, 40)
+leaderboard_button_color = (50, 50, 50)
+leaderboard_button_text_color = white
+leaderboard_button_font = pygame.font.SysFont(None, 30)
+
+name_entry_visible = False
+return_button_rect = pygame.Rect(10, 10, 150, 40)
+return_button_color = (50, 50, 50)
+return_button_text_color = white
+return_button_font = pygame.font.SysFont(None, 30)
+
+existing_user_button_rect = pygame.Rect(300, 500, 155, 40)
+new_user_button_rect = pygame.Rect(550, 500, 110, 40)
+user_button_color = (50, 50, 50)
+user_button_text_color = white
+user_button_font = pygame.font.SysFont(None, 30)
+
+
+name_entry_visible = False
+text_box_rect = pygame.Rect(250, 550, 400, 40)
+text_box_color = white
+text_box_line_color = red
+
+
 def insert_player_data(name, highscore):
     # Check if the player already exists
     cursor.execute('''
@@ -82,55 +109,23 @@ def get_highscore(player_name):
         return result[0]  # Returning the highscore
     else:
         return None  # Player not found in the database
-    
-def update_highscore(player_name, new_highscore):
-    cursor.execute('''
-        UPDATE player SET highscore=? WHERE name=?
-    ''', (new_highscore, player_name))
-    
-    conn.commit()
-
 def show_score(text, color, x, y):
     screen_text = font.render(text, True, color)
     gw.blit(screen_text, [x, y])
 
 def plot_snake(gameWindow, color, snk_list, snake_size):
-    for x, y in snk_list:
-        pygame.draw.rect(gameWindow, color, [x, y, snake_size, snake_size])
+    for i, (x, y) in enumerate(snk_list):
+        if i == len(snk_list) - 1:  # Check if it's the head of the snake
+            pygame.draw.rect(gameWindow, brown , [x, y, snake_size, snake_size])  # Brown color for the head
+        else:
+            pygame.draw.rect(gameWindow, color, [x, y, snake_size, snake_size])
 
-leaderboard_button_rect = pygame.Rect(750, 15, 120, 40)
-leaderboard_button_color = (50, 50, 50)
-leaderboard_button_text_color = white
-leaderboard_button_font = pygame.font.SysFont(None, 30)
-
-# def draw_leaderboard_button():
-#     pygame.draw.rect(gw, leaderboard_button_color, leaderboard_button_rect)
-#     leaderboard_button_text = leaderboard_button_font.render("Leaderboard", True, leaderboard_button_text_color)
-#     gw.blit(leaderboard_button_text, (leaderboard_button_rect.x + 5, leaderboard_button_rect.y + 10))
-
-# def is_mouse_over_button(pos):
-#     return leaderboard_button_rect.collidepoint(pos)
-
-name_entry_visible = False
-return_button_rect = pygame.Rect(10, 10, 150, 40)
-return_button_color = (50, 50, 50)
-return_button_text_color = white
-return_button_font = pygame.font.SysFont(None, 30)
-
-def draw_return_button():
-    # Draw Return to Game button
-    pygame.draw.rect(gw, return_button_color, return_button_rect)
-    return_button_text = return_button_font.render("Return to Game", True, return_button_text_color)
-    gw.blit(return_button_text, (return_button_rect.x + 10, return_button_rect.y + 10))
 
 def draw_leaderboard_button():
     pygame.draw.rect(gw, leaderboard_button_color, leaderboard_button_rect)
     leaderboard_button_text = leaderboard_button_font.render("Leaderboard", True, leaderboard_button_text_color)
     gw.blit(leaderboard_button_text, (leaderboard_button_rect.x + 5, leaderboard_button_rect.y + 10))
-
-def is_mouse_over_button(pos):
-    return leaderboard_button_rect.collidepoint(pos)
-
+    
 def show_leaderboard():
     global player_name
     exit_leaderboard = False
@@ -174,13 +169,6 @@ def show_leaderboard():
                     exit_leaderboard = True
 
 
-
-existing_user_button_rect = pygame.Rect(300, 500, 150, 40)
-new_user_button_rect = pygame.Rect(550, 500, 150, 40)
-user_button_color = (50, 50, 50)
-user_button_text_color = white
-user_button_font = pygame.font.SysFont(None, 30)
-
 def draw_user_buttons():
     # Draw Existing User button
     pygame.draw.rect(gw, user_button_color, existing_user_button_rect)
@@ -192,10 +180,6 @@ def draw_user_buttons():
     new_user_button_text = user_button_font.render("New User", True, user_button_text_color)
     gw.blit(new_user_button_text, (new_user_button_rect.x + 10, new_user_button_rect.y + 10))
 
-name_entry_visible = False
-text_box_rect = pygame.Rect(250, 550, 400, 40)
-text_box_color = white
-text_box_line_color = red
 
 def draw_text_box():
     # Draw text box
@@ -217,6 +201,9 @@ def welcome():
         gw.fill(black)
         gw.blit(bgimg, (0, 0))
         show_score(" The Game... ", red, 350, 430)
+        highscore = get_highscore(player_name)
+        if highscore:
+            show_score("  HighScore : " + str(highscore) + "      Player : " + str(player_name), white, 5, 5)
 
         # Draw Existing User and New User buttons
         draw_user_buttons()
@@ -229,6 +216,7 @@ def welcome():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit_game = True
+                return
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mouse_pos = pygame.mouse.get_pos()
@@ -258,7 +246,6 @@ def welcome():
 
                         if existing_name:
                             print("Warning: Name already exists. Please choose a different name.")
-                            # You can display a warning message on the screen if needed
                         else:
                             name_entry_visible = False
                             pygame.mixer.music.load('game_music.mp3')
@@ -266,7 +253,6 @@ def welcome():
                             insert_player_data(player_name, 0)
                             gameloop()
                     else:
-                        # Existing user, check if the name exists
                         cursor.execute('''
                             SELECT name FROM player WHERE name=?
                         ''', (player_name,))
@@ -280,7 +266,6 @@ def welcome():
                             gameloop()
                         else:
                             print("Warning: Name does not exist. Please enter a valid name.")
-                            # You can display a warning message on the screen if needed
 
                 elif event.key == pygame.K_BACKSPACE:
                     player_name = player_name[:-1]
@@ -290,12 +275,6 @@ def welcome():
 
         pygame.display.update()
         clock.tick(60)
-# Add a new function to open the leaderboard
-def open_leaderboard():
-    # You can implement this function to display the leaderboard
-    print("Opening Leaderboard")
-
-
 def gameloop():
 
     exit_game = False
@@ -322,7 +301,6 @@ def gameloop():
     with open ("highscore.txt","r") as f:
         highscore = f.read()
     
-    t = th.Thread(target=update_highscore,args=[player_name,highscore])
     
     while not exit_game:
         if game_over:
@@ -382,19 +360,21 @@ def gameloop():
                 score +=10
                 food_x = random.randint(20, int(screen_width / 2))
                 food_y = random.randint(20, int(screen_height / 2))
+                if food_x<10 and food_y<10:
+                    food_y += 15
                 snk_length +=5
                 if score > int(highscore):
                     highscore = score
 
             gw.fill(black)
             
-            if highscore is None or score > int(highscore):
-                        update_highscore(player_name, score)
             highscore = get_highscore(player_name)
+            if highscore is None or score > int(highscore):
+                highscore = score
 
-            show_score("Score : " + str(score) + " HighScore : " + str(highscore), white, 5, 5)
+            #show_score("Score : " + str(score) + "   HighScore : " + str(highscore), white, 5, 5)
+            show_score("Score : " + str(score), white, 5, 5)
             pygame.draw.rect(gw, yellow, [food_x, food_y, snake_size, snake_size])
-
 
             head = []
             head.append(snake_x)
@@ -409,39 +389,29 @@ def gameloop():
                 pygame.mixer.music.play()
                 pygame.mixer.fadeout(10)
                 game_over = True
-                if highscore is None or score > highscore:
-                        update_highscore(player_name, score)
+                if highscore is None or score > int(highscore):
+                    highscore = score
 
             if snake_x<0 or snake_x>screen_width or snake_y<0 or snake_y>screen_height:
-                # game_over = True
-                # pygame.mixer.music.load('boom.mp3')
-                # pygame.mixer.music.play()
-                if snake_x < 0:
-                    for i in range(len(snk_list)):
-                        snk_list[i][0] += screen_width
-                    snake_x += screen_width
+                    if snake_x < 0:
+                        for i in range(len(snk_list)):
+                            snk_list[i][0] += screen_width
+                        snake_x += screen_width
 
-                if snake_x > screen_width:
-                    for i in range(len(snk_list)):
-                        snk_list[i][0] -= screen_width
-                    snake_x -= screen_width
+                    if snake_x > screen_width:
+                        for i in range(len(snk_list)):
+                            snk_list[i][0] -= screen_width
+                        snake_x -= screen_width
 
-                if snake_y < 0:
-                    for i in range(len(snk_list)):
-                        snk_list[i][1] += screen_height
-                    snake_y += screen_height
+                    if snake_y < 0:
+                        for i in range(len(snk_list)):
+                            snk_list[i][1] += screen_height
+                        snake_y += screen_height
 
-                if snake_y > screen_height:
-                    for i in range(len(snk_list)):
-                        snk_list[i][1] -= screen_height
-                    snake_y -= screen_height
-                    
-                if highscore is None or score > highscore:
-                        # update_highscore(player_name, score)
-                        t.start()
-                        # t.join()
-
-                    # plot_snake(gw, red, snk_list, snake_size)
+                    if snake_y > screen_height:
+                        for i in range(len(snk_list)):
+                            snk_list[i][1] -= screen_height
+                        snake_y -= screen_height
                 
             plot_snake(gw, red, snk_list, snake_size)
             
