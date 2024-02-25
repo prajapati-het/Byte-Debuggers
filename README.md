@@ -8,6 +8,7 @@ Follow the below instructions to play the game:
 3) Open the folder in any IDE , for e.g :- Visual Studio Code and run the "Naagin-The Game.py" Python Source File
 4) If you are new user then click on New User else Existing User and press enter to start the game.
 5) On the Home Screen, You can see yourself in Leaderboard Section give on the top-right corner of the home screen.
+6) There is an amazing option called "Theme" where you can select Theme of your choice and enjoy different color combinations.
 
 This game stores the data of players,scores,etc in the database named "player_data.db"
 I have provided background music to have a realistic feel of the game.
